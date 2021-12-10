@@ -8,7 +8,7 @@ utility score. This score is calculated based on attributes that can be develope
 through the gameplay such as jobs available, resources, and housing. 
 
 ## Project goal
-## The application URL (not the repository url)
+## The application URL 
 ## Screenshots
 ## Main functions
 The main functions for this project is
@@ -16,7 +16,7 @@ The main functions for this project is
 
 Data source for the boundary lines for WA school districts: ![https://gisdata.kingcounty.gov/arcgis/rest/services/OpenDataPortal/district___base/MapServer/416]
 
-## Applied libraries (e.g., mapbox gl js) and Web Services (e.g., github, basemap) in use
+## Applied libraries
 
 Libraries that are used in this project:
 - mapbox gl js
