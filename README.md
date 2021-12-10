@@ -8,10 +8,25 @@ utility score. This score is calculated based on attributes that can be develope
 through the gameplay such as jobs available, resources, and housing. 
 
 ## Project goal
-## The application URL 
+
+The goal of this project is to create a fun little simulation that will simulate the development
+of an area through housing, jobs, education, and resources. Overall, the project isn't aiming to
+be complicated so most of the simulation will be done with rough calculations. But overall, the
+project aims to show some interesting ways to use GIS and provide a little game for the user in
+the process. 
+
+## The application URL
+
+![https://anemnox.github.io/GIS-Game/]
+
 ## Screenshots
 ## Main functions
-The main functions for this project is
+
+The main functions in this project currently are:
+- Randomly generated resources per polygon features
+- Hover over resource icons to get a description of them
+- Hover over boundary polygons to get the stats of the area and reveal all available resources in the area
+
 ## Data sources
 
 Data source for the boundary lines for WA school districts: ![https://gisdata.kingcounty.gov/arcgis/rest/services/OpenDataPortal/district___base/MapServer/416]
