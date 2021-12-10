@@ -17,7 +17,7 @@ the process.
 
 ## The application URL
 
-![https://anemnox.github.io/GIS-Game/]
+[https://anemnox.github.io/GIS-Game/](https://anemnox.github.io/GIS-Game/)
 
 ## Screenshots
 ## Main functions
@@ -29,7 +29,7 @@ The main functions in this project currently are:
 
 ## Data sources
 
-Data source for the boundary lines for WA school districts: ![https://gisdata.kingcounty.gov/arcgis/rest/services/OpenDataPortal/district___base/MapServer/416]
+Data source for the boundary lines for WA school districts: [https://gisdata.kingcounty.gov/arcgis/rest/services/OpenDataPortal/district___base/MapServer/416](https://gisdata.kingcounty.gov/arcgis/rest/services/OpenDataPortal/district___base/MapServer/416)
 
 ## Applied libraries
 
