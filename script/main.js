@@ -1,10 +1,10 @@
 /************************************************
-*            Enticement: The Game               *
+*            Attraction: The Game               *
 *-----------------------------------------------*
 * Pick a section of land to develop and compete *
 * with other "players" to create the most       *
-* enticing land through the use of jobs/money/  *
-* natural resources/ and more!                  *
+* attractive land through the use of jobs/      *
+* money/natural resources/ and more!            *
 *************************************************/
 /* Define map bounds    */
 const bounds = [
@@ -39,6 +39,8 @@ const ICON_COLOR_EXPRESSION = [
   '#aa6666',
   '#000000'
 ];
+
+const EXTRA_RESOURCES = 3;
 
 /************************
 *     Global Vars       *
@@ -88,19 +90,29 @@ async function mapSetup(map) {
 async function gameSetup(m) {
   const map = m;
   await loadImages(map);
-  const features = (await fetchBoundaries(map)).features;
+  const mapData = (await fetchBoundaries(map))
+  const features = mapData.features;
 
-  // if no game to load
-  const rDat = await generateResourceData(features);
-  const pDat = await generatePlayerData(features);
-  // else load game
-  // loadgame();
+  map.on('load', () => {
+    // if no game to load
+    const rDat = generateResourceData(features);
+    const pDat = generatePlayerData(mapData.features, rDat.features);
+    // else load game
+    // loadgame();
 
-  await loadResources(map, rDat);
-
-  initResourceHoverHandlers(map);
-  initBoundaryHoverHandlers(map);
+    loadResources(map, rDat);
+    loadBoundaries(map, mapData);
+    initResourceHoverHandlers(map);
+    initBoundaryHoverHandlers(map, pDat, rDat.features);
+  })
 }
+
+
+
+
+
+
+
 
 /************************
 *     Mapbox Logic      *
@@ -109,34 +121,34 @@ async function fetchBoundaries(map) {
   let response = await fetch('assets/school_district_shapes.geojson');
   let mapData = await response.json();
 
-  map.on('load', function loadingData() {
-    map.addSource('mapData', {
-      'type': 'geojson',
-      'data': mapData,
-      'generateId': true
-    });
-
-    map.addLayer({
-      'id': 'boundary-layer',
-      'type': 'fill',
-      'source': 'mapData',
-      'paint': {
-        'fill-color': '#CCFFCC',
-        'fill-outline-color': '#003311',
-        'fill-opacity': [
-          'case',
-          ['boolean', ['feature-state', 'hover'], false],
-          0.5,
-          0.2
-        ]
-      }
-    }, layerIDs[0]);
-  });
-
   return mapData;
 }
 
-async function loadImages(map) {
+function loadBoundaries(map, mapData) {
+  map.addSource('mapData', {
+    'type': 'geojson',
+    'data': mapData,
+    'generateId': true
+  });
+
+  map.addLayer({
+    'id': 'boundary-layer',
+    'type': 'fill',
+    'source': 'mapData',
+    'paint': {
+      'fill-color': '#CCFFCC',
+      'fill-outline-color': '#003311',
+      'fill-opacity': [
+        'case',
+        ['boolean', ['feature-state', 'hover'], false],
+        0.5,
+        0.2
+      ]
+    }
+  }, layerIDs[0]);
+}
+
+function loadImages(map) {
   map.loadImage('./img/house.png', (error, image) => {
       if (error) throw error;
       map.addImage('house-marker', image, { 'sdf': true });
@@ -155,7 +167,7 @@ async function loadImages(map) {
   });
 }
 
-async function loadResources(map, resourceData) {
+function loadResources(map, resourceData) {
   map.addSource('resourceData', {
     'type': 'geojson',
     'data': resourceData,
@@ -182,8 +194,6 @@ async function loadResources(map, resourceData) {
       layerIDs.push(layerID);
     }
   }
-
-  console.log("Showing resources!");
 }
 
 function initResourceHoverHandlers(map) {
@@ -213,17 +223,10 @@ function initResourceHoverHandlers(map) {
   }
 }
 
-function initBoundaryHoverHandlers(map) {
+function initBoundaryHoverHandlers(map, pDat, rDat) {
   map.on('mousemove', 'boundary-layer', (e) => {
     if (e.features.length > 0) {
-      if (inputDat.hoveredBoundaryId !== null) {
-        const layerID = `${inputDat.hoveredBoundaryId}-icons`;
-        map.setFeatureState(
-          { source: 'mapData', id: inputDat.hoveredBoundaryId },
-          { hover: false }
-        );
-        map.setLayoutProperty(layerID, "icon-allow-overlap", false);
-      }
+      removeHoveredBoundaryId(map);
       inputDat.hoveredBoundaryId = e.features[0].id;
       const layerID = `${inputDat.hoveredBoundaryId}-icons`;
       map.setFeatureState(
@@ -231,19 +234,54 @@ function initBoundaryHoverHandlers(map) {
         { hover: true }
       );
       map.setLayoutProperty(layerID, "icon-allow-overlap", true);
+      map.setLayoutProperty(layerID, "icon-ignore-placement", true);
+      showBoundaryInfo(inputDat.hoveredBoundaryId, pDat, rDat);
     }
   });
 
   // When the mouse leaves the state-fill layer, update the feature state of the
   // previously hovered feature.
-  map.on('mouseleave', 'state-fills', () => {
-    if (hoveredStateId !== null) {
-      map.setFeatureState(
-        { source: 'states', id: hoveredStateId },
-        { hover: false }
-      );
-    }
-    hoveredStateId = null;
+  map.on('mouseleave', 'boundary-layer', () => {
+    removeHoveredBoundaryId(map);
+  });
+}
+
+function removeHoveredBoundaryId(map) {
+  if (inputDat.hoveredBoundaryId !== null) {
+    const layerID = `${inputDat.hoveredBoundaryId}-icons`;
+    map.setFeatureState(
+      { source: 'mapData', id: inputDat.hoveredBoundaryId },
+      { hover: false }
+    );
+    map.setLayoutProperty(layerID, "icon-allow-overlap", false);
+    map.setLayoutProperty(layerID, "icon-ignore-placement", false);
+    hideBoundaryInfo();
+
+    inputDat.hoveredBoundaryId = null;
+  }
+}
+
+function showBoundaryInfo(id, pDat, resDat) {
+  let playerDat = calculatePlayerData(pDat[id], resDat);
+
+
+  document.getElementById("info-name").innerHTML = playerDat["name"];
+  document.getElementById("population-tag").innerHTML = playerDat["population"];
+  document.getElementById("money-tag").innerHTML = playerDat["money"];
+  document.getElementById("education-tag").innerHTML = playerDat["education"];
+  document.getElementById("nat-res-tag").innerHTML = playerDat["naturalResource"];
+  document.getElementById("job-tag").innerHTML = playerDat["jobs"];
+
+  document.getElementById("boundary-info").classList.remove("hidden");
+}
+
+function hideBoundaryInfo() {
+  document.getElementById("boundary-info").classList.add("hidden");
+}
+
+function getBoundaryFeatures(id, resFeatures) {
+  return resFeatures.filter((f) => {
+    return f.properties.owner === id
   });
 }
 
@@ -269,6 +307,12 @@ function generateRandomPoint(polygon) {
 
   return inside ? pt : generateRandomPoint(polygon);
 }
+
+
+
+
+
+
 
 
 /************************
@@ -303,16 +347,15 @@ const RESOURCE_TYPES = {
 }
 
 class Player {
-  constructor() {
-    this.population = 0;
-    this.money = 0;
-    this.jobs = 0;
-    this.education = 0;
-    this.naturalResource = 0;
+  constructor(id, name) {
+    this.boundaryId = id;
+    this.name = name;
+    this.population = 10;
+    this.money = 10;
   }
 }
 
-async function generateResourceData(features) {
+function generateResourceData(features) {
   let resourcesGeojson = {
     "name": "Resources",
     "type": "FeatureCollection",
@@ -322,7 +365,8 @@ async function generateResourceData(features) {
   for(let i = 0; i < features.length; i++) {
     let poly = features[i];
 
-    Object.keys(RESOURCE_TYPES).forEach((item) => {
+    let resourceTypes = Object.keys(RESOURCE_TYPES);
+    resourceTypes.forEach((item) => {
       let point = generateRandomPoint(poly);
       point.properties = {
         "type": item,
@@ -330,13 +374,51 @@ async function generateResourceData(features) {
       }
       resourcesGeojson["features"].push(point);
     });
+
+    for(let j = 0; j < EXTRA_RESOURCES; j++) {
+      let ind = Math.floor(Math.random() * resourceTypes.length);
+      let point = generateRandomPoint(poly);
+      let item = resourceTypes[ind];
+      point.properties = {
+        "type": item,
+        "owner": i
+      }
+      resourcesGeojson["features"].push(point);
+    }
   }
 
   return resourcesGeojson;
 }
 
-async function generatePlayerData(features) {
+function generatePlayerData(boundDat) {
+  let data = [];
 
+  for(let i = 0; i < boundDat.length; i++) {
+    let name = boundDat[i].properties["NAME"];
+    data.push(new Player(i, name));
+  }
+
+  return data;
+}
+
+function calculatePlayerData(player, resData) {
+  let features = getBoundaryFeatures(player.boundaryId, resData);
+  let obj = {
+    jobs: 0,
+    education: 0,
+    naturalResource: 0
+  }
+  features.forEach((item, i) => {
+    let props = item.properties
+    obj["jobs"] += RESOURCE_TYPES[props["type"]]["jobs"]
+    obj["education"] += RESOURCE_TYPES[props["type"]]["education"]
+    obj["naturalResource"] += RESOURCE_TYPES[props["type"]]["naturalResource"]
+  });
+
+  return {
+    ...player,
+    ...obj
+  }
 }
 
 /************************

@@ -2,7 +2,7 @@
 <html>
   <head>
       <meta charset="utf-8">
-      <title>Interactive Web Mapping</title>
+      <title>Attraction</title>
       <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
       <link href="https://api.mapbox.com/mapbox-gl-js/v2.5.0/mapbox-gl.css" rel="stylesheet">
       <link href="style.css" rel="stylesheet" type="text/css"/>
@@ -13,8 +13,34 @@
   </head>
   <body>
       <div id="map"></div>
-      <div id="legend"></div>
+      <div id="legend">
+        <span class="legend-header">Resources</span>
+        <hr />
+        <ul>
+          <li><img src="./img/office.png"/><span>Office</span></li>
+          <li><img src="./img/house.png"/><span>Housing</span></li>
+          <li><img src="./img/nat_res.png"/><span>Natural Resource</span></li>
+          <li><img src="./img/school.png"/><span>School</span></li>
+        </ul>
+      </div>
+      <div id="boundary-info" class="hidden">
+        <div>
+          <span id="info-name"></span> <span>Info</span>
+          <hr />
+          <ul>
+            <li>Population: <span id="population-tag"></span></li>
+            <li>Money: <span id="money-tag"></span></li>
+            <li>Education: <span id="education-tag"></span></li>
+            <li>Natural Resources: <span id="nat-res-tag"></span></li>
+            <li>Jobs: <span id="job-tag"></span></li>
+          </ul>
+        </div>
+      </div>
       <div id="score-board"></div>
-      <div id="nav-bar"></div>
+      <div id="nav-bar">
+        <div id="title-box">Attraction: The Game</div>
+        <div>
+        </div>
+      </div>
   </body>
 </html>
